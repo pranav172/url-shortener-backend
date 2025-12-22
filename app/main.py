@@ -29,7 +29,8 @@ def health():
 # Create short URL
 @app.post("/shorten", response_model=URLResponse)
 def shorten_url(payload: URLCreate, db: Session = Depends(get_db)):
-    url = URL(original_url=payload.original_url)
+    url = URL(original_url=str(payload.original_url))
+
     db.add(url)
     db.commit()
     db.refresh(url)
