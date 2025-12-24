@@ -3,7 +3,7 @@ import time
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-
+from datetime import datetime, timedelta
 from collections import defaultdict
 from fastapi import Request
 from app.database import engine, SessionLocal, Base
@@ -65,7 +65,14 @@ def shorten_url(
             detail="Too many requests. Try again later."
         )
 
-    url = URL(original_url=str(payload.original_url))
+
+    expiry_time = datetime.utcnow() + timedelta(hours=24)
+
+    url = URL(
+        original_url=str(payload.original_url),
+        expires_at=expiry_time
+    )
+
     db.add(url)
     db.commit()
     db.refresh(url)
@@ -80,6 +87,11 @@ def shorten_url(
 @app.get("/{short_code}")
 def redirect(short_code: str, db: Session = Depends(get_db)):
     url = db.query(URL).filter(URL.short_code == short_code).first()
+
     if not url:
         raise HTTPException(status_code=404, detail="URL not found")
+
+    if url.expires_at and url.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=410, detail="Link expired")
+
     return RedirectResponse(url.original_url)

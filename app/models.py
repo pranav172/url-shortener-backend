@@ -9,3 +9,6 @@ class URL(Base):
     original_url = Column(Text, nullable=False)
     short_code = Column(String(10), unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # NEW
+    expires_at = Column(DateTime, nullable=True)
