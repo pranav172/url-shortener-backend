@@ -1,5 +1,6 @@
 
 import time
+from app.cache import redis_client
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -86,12 +87,26 @@ def shorten_url(
 # Redirect endpoint (YOU ADD THIS)
 @app.get("/{short_code}")
 def redirect(short_code: str, db: Session = Depends(get_db)):
-    url = db.query(URL).filter(URL.short_code == short_code).first()
+    # 1️⃣ Try Redis first
+    cached_url = redis_client.get(short_code)
+    if cached_url:
+        return RedirectResponse(cached_url)
 
+    # 2️⃣ Fallback to DB
+    url = db.query(URL).filter(URL.short_code == short_code).first()
     if not url:
         raise HTTPException(status_code=404, detail="URL not found")
 
+    # 3️⃣ Expiry check
     if url.expires_at and url.expires_at < datetime.utcnow():
         raise HTTPException(status_code=410, detail="Link expired")
 
+    # 4️⃣ Save to Redis (cache it)
+    redis_client.setex(
+        short_code,
+        3600,  # cache for 1 hour
+        url.original_url
+    )
+
     return RedirectResponse(url.original_url)
+
