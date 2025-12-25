@@ -61,19 +61,9 @@ def shorten_url(
     client_ip = request.client.host
 
     if not check_rate_limit(client_ip):
-        raise HTTPException(
-            status_code=429,
-            detail="Too many requests. Try again later."
-        )
+        raise HTTPException(status_code=429, detail="Too many requests")
 
-
-    expiry_time = datetime.utcnow() + timedelta(hours=24)
-
-    url = URL(
-        original_url=str(payload.original_url),
-        expires_at=expiry_time
-    )
-
+    url = URL(original_url=str(payload.original_url))
     db.add(url)
     db.commit()
     db.refresh(url)
@@ -82,7 +72,9 @@ def shorten_url(
     url.short_code = short_code
     db.commit()
 
-    return {"short_url": f"http://localhost:8000/{short_code}"}
+    base_url = str(request.base_url)
+    return {"short_url": f"{base_url}{short_code}"}
+
 
 # Redirect endpoint (YOU ADD THIS)
 @app.get("/{short_code}")
