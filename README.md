@@ -16,48 +16,38 @@ A production-ready URL Shortener backend built with FastAPI, designed with scala
 ## 🏗️ Architecture
 Client → FastAPI → Redis → PostgreSQL
 
-
-
 ## 🧪 API Endpoints
-
 ### Health Check
 GET /
-
 
 ### Create Short URL
 POST /shorten
 
-
-
-**Request:**
-```json
+Request:
 {
-  "original_url": "https://www.google.com"
+    "original_url": "https://www.google.com"
 }
+
 Response:
-
-json
 {
-  "short_url": "https://url-shortener-backend-fgyj.onrender.com/abc123"
+    "short_url": "https://url-shortener-backend-fgyj.onrender.com/abc123"
 }
-Redirect
+
+### Redirect
 GET /{short_code}
-⚙️ Tech Stack
-Backend: FastAPI, Python
 
-Database: PostgreSQL
+## ⚙️ Tech Stack
+- **Backend:** FastAPI, Python
+- **Database:** PostgreSQL
+- **Cache:** Redis
+- **ORM:** SQLAlchemy
+- **Deployment:** Render
 
-Cache: Redis
-
-ORM: SQLAlchemy
-
-Deployment: Render
-
-🛠️ Local Setup
+## 🛠️ Local Setup
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 
-👤 Author
-Pranav Raj
-GitHub: https://github.com/pranav172
+## 👤 Author
+**Pranav Raj**  
+GitHub: https://github.com/pranav172  
 LinkedIn: https://linkedin.com/in/pranav-raj-163230256
